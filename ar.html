@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Multi-Step Menu Order</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <style>
+    body {
+      background: linear-gradient(135deg, #f3f4f6, #d1d5db);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      color: #1f2937;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 1rem;
+    }
+
+    .card {
+      background: #ffffff;
+      border-radius: 1rem;
+      width: 100%;
+      max-width: 1080px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+      display: flex;
+      flex-direction: row;
+      overflow: hidden;
+      border: 2px solid #2563eb;
+      height: 90vh;
+    }
+
+    .menu-panel {
+      width: 300px;
+      background: #f8fafc;
+      padding: 1rem;
+      overflow-y: auto;
+      border-right: 2px solid #2563eb;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    header {
+      background-color: #1f2937;
+      color: white;
+      padding: 0.75rem 1rem;
+      font-family: 'Brush Script MT', cursive;
+      font-size: 1.25rem;
+      text-align: center;
+      user-select: none;
+      border-radius: 0.75rem;
+      margin-bottom: 0.75rem;
+    }
+
+    h2 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin-top: 0.75rem;
+      margin-bottom: 0.5rem;
+      border-bottom: 3px solid #2563eb;
+      padding-bottom: 0.25rem;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    li {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 1rem;
+      font-weight: 600;
+      padding: 0.45rem 0.65rem;
+      border-radius: 0.5rem;
+      cursor: pointer;
+      user-select: none;
+      transition: background-color 0.25s ease;
+      border: 1px solid #e5e7eb;
+    }
+
+    li:hover {
+      background-color: #e0e7ff;
+    }
+
+    li[aria-selected="true"] {
+      background-color: #2563eb;
+      color: white;
+    }
+
+    li[aria-selected="true"] .price {
+      color: white;
+    }
+
+    li[aria-selected=true] .info-btn{color:#fff;}
+
+    .name{flex:1;}
+    .price {
+      color: #2563eb;
+      font-weight: 700;
+    }
+    .info-btn{color:#2563eb;font-size:.9rem;line-height:1;cursor:pointer;}
+
+    .summary-panel {
+      flex: 1 1 50%;
+      display: flex;
+      flex-direction: column;
+      padding: 1rem;
+      height: 100%;
+    }
+
+    .viewer-wrapper {
+      flex: 1;
+      background: #f1f5f9;
+      border: 2px dashed #94a3b8;
+      border-radius: 0.75rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 0.75rem;
+      height: 100%;
+    }
+
+    model-viewer {
+      width: 100%;
+      flex: 1;
+      background: #cbd5e1;
+      border-radius: 0.5rem;
+    }
+
+    .modal-bg{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
+              background:rgba(0,0,0,.4);backdrop-filter:blur(4px);z-index:50;}
+    .modal{background:#fff;border-radius:1rem;padding:1.5rem;
+           box-shadow:0 10px 25px rgba(0,0,0,.15);max-width:24rem;width:90%;}
+    /* start hidden by default (Tailwind’s `hidden` utility) */
+    .hidden{display:none!important;}
+  </style>
+
+</head>
+<body>
+  <main class="card">
+    <aside class="menu-panel">
+      <div>
+        <header>Our Menu</header>
+        <h2 id="stepTitle">Step 1: Select Food</h2>
+
+        <!-- Food List -->
+        <section id="foodSection">
+          <ul>
+            <li data-item="Burger" data-price="200"> 
+	      <span class="name">Burger</span>
+              <span class="price">Rs.200</span>
+              <button class="info-btn" aria-label="Burger nutrition">ℹ️</button>
+	    </li>
+            <li data-item="Pizza" data-price="200">
+              <span class="name">Pizza</span><span class="price">Rs.200</span>
+              <button class="info-btn" aria-label="Pizza nutrition">ℹ️</button>
+            </li>
+            <li data-item="Salad" data-price="200">
+              <span class="name">Salad</span><span class="price">Rs.200</span>
+              <button class="info-btn" aria-label="Salad nutrition">ℹ️</button>
+            </li>
+            <li data-item="Noodles" data-price="100">
+              <span class="name">Noodles</span><span class="price">Rs.100</span>
+              <button class="info-btn" aria-label="Noodles nutrition">ℹ️</button>
+            </li>
+            <li data-item="Maggie" data-price="50">
+              <span class="name">Maggie</span><span class="price">Rs.50</span>
+              <button class="info-btn" aria-label="Maggie nutrition">ℹ️</button>
+            </li>
+            <li data-item="Soup" data-price="250">
+              <span class="name">Soup</span><span class="price">Rs.250</span>
+              <button class="info-btn" aria-label="Soup nutrition">ℹ️</button>
+            </li>
+            <li data-item="Nachos" data-price="200">
+              <span class="name">Nachos</span><span class="price">Rs.200</span>
+              <button class="info-btn" aria-label="Nachos nutrition">ℹ️</button>
+            </li>
+            <li data-item="French Fries" data-price="100">
+              <span class="name">French&nbsp;Fries</span><span class="price">Rs.100</span>
+              <button class="info-btn" aria-label="Fries nutrition">ℹ️</button>
+            </li>  </ul>
+        </section>
+
+        <!-- Drinks List -->
+        <section id="drinksSection" class="hidden">
+          <ul>
+            <li data-item="Fruits Juice" data-price="300">
+              <span class="name">Fruit&nbsp;Juice</span><span class="price">Rs.300</span>
+              <button class="info-btn" aria-label="Juice nutrition">ℹ️</button>
+            </li>
+            <li data-item="Coffee" data-price="200">
+              <span class="name">Coffee</span><span class="price">Rs.200</span>
+              <button class="info-btn" aria-label="Coffee nutrition">ℹ️</button>
+            </li>
+            <li data-item="Hot Tea" data-price="500">
+              <span class="name">Hot&nbsp;Tea</span><span class="price">Rs.500</span>
+              <button class="info-btn" aria-label="Tea nutrition">ℹ️</button>
+            </li>
+            <li data-item="Americano" data-price="100">
+              <span class="name">Americano</span><span class="price">Rs.100</span>
+              <button class="info-btn" aria-label="Americano nutrition">ℹ️</button>
+            </li>
+            <li data-item="Latte" data-price="400">
+              <span class="name">Latte</span><span class="price">Rs.400</span>
+              <button class="info-btn" aria-label="Latte nutrition">ℹ️</button>
+            </li>        
+         </ul>
+        </section>
+
+        <!-- Order Summary -->
+        <section id="summarySection" class="hidden">
+          <ul id="summaryList" class="text-sm list-disc pl-5 mb-2"></ul>
+          <p class="font-bold text-sm">Total: Rs. <span id="totalPrice">0</span></p>
+        </section>
+      </div>
+
+      <!-- Navigation Buttons -->
+      <div class="flex justify-between mt-4">
+        <button id="backBtn" class="bg-gray-300 px-3 py-1 rounded disabled:opacity-50" disabled>Back</button>
+        <button id="nextBtn" class="bg-blue-600 text-white px-4 py-1 rounded">Next</button>
+      </div>
+    </aside>
+
+    <section class="summary-panel">
+      <div class="viewer-wrapper">
+        <h3 id="viewerLabel">3D View</h3>
+        <model-viewer id="modelViewer"
+                      src=""
+                      alt="Select an item to view it in 3D"
+                      camera-controls
+                      auto-rotate
+                      disable-zoom
+                      exposure="1.2"
+                      shadow-intensity="1">
+        </model-viewer>
+      </div>
+    </section>
+  </main>
+
+ <!-- ───────────────── NEW (1) Payment‑choice modal ────────────────── -->
+  <div id="payBg" class="modal-bg flex hidden">
+    <div class="modal text-center">
+      <h3 class="text-xl font-semibold mb-4">Select payment method</h3>
+      <div class="flex justify-evenly">
+        <button id="payCash"
+                class="bg-gray-200 px-4 py-2 rounded hover:bg-gray-300">Cash</button>
+        <button id="payUpi"
+                class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">UPI</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ───────────────── NEW (2) QR‑code modal ────────────────────────── -->
+  <div id="qrBg" class="modal-bg flex hidden">
+    <div class="modal text-center">
+      <h3 class="text-xl font-semibold mb-3">Scan to pay (UPI)</h3>
+      <div id="qrBox" class="mx-auto"></div>
+      <button id="closeQr"
+              class="mt-5 bg-gray-300 px-4 py-1 rounded">Close</button>
+    </div>
+  </div>
+
+   <div id="nutriBg" class="modal-bg hidden">
+    <div class="modal">
+     <h3 id="nutriTitle" class="text-xl font-semibold mb-2"></h3>
+     <ul id="nutriList" class="list-disc pl-5 text-sm leading-6 mb-4"></ul>
+     <button id="closeNutri" class="bg-gray-300 px-4 py-1 rounded">Close</button>
+    </div>
+   </div>
+
+  <script>
+    const MODEL_SOURCES = {
+      'Burger':        'https://shivanibishnani94.github.io/abc/chicken_burger.glb',
+      'Pizza':         'https://shivanibishnani94.github.io/abc/chicken_nuggets_biscuit.glb',
+      'Salad':         'https://shivanibishnani94.github.io/abc/fruit_salad.glb',
+      'Noodles':       'https://shivanibishnani94.github.io/abc/fancy_spam_sandwich.glb',
+      'Maggie':        'https://shivanibishnani94.github.io/abc/hot_dog.glb',
+      'Soup':          'https://shivanibishnani94.github.io/abc/sandwich.glb',
+      'Nachos':        'https://shivanibishnani94.github.io/abc/spicy_chicken.glb',
+      'French Fries':  'https://shivanibishnani94.github.io/abc/french_fries.glb',
+      'Fruits Juice':  'https://shivanibishnani94.github.io/abc/orange_juice.glb',
+      'Coffee':        'https://shivanibishnani94.github.io/abc/coffee.glb',
+      'Hot Tea':       'https://shivanibishnani94.github.io/abc/lemon_tea.glb',
+      'Americano':     'https://shivanibishnani94.github.io/abc/cocktail.glb',
+      'Latte':         'https://shivanibishnani94.github.io/abc/milkshake.glb'
+    };
+
+    const NUTRITION={
+      'Burger'       :{calories:510, allergens:'gluten, dairy', vegan:false},
+      'Pizza'        :{calories:460, allergens:'gluten, dairy', vegan:false},
+      'Salad'        :{calories:220, allergens:'nuts (optional)', vegan:true},
+      'Noodles'      :{calories:330, allergens:'gluten, soy', vegan:true},
+      'Maggie'       :{calories:275, allergens:'gluten', vegan:true},
+      'Soup'         :{calories:190, allergens:'celery', vegan:true},
+      'Nachos'       :{calories:300, allergens:'corn, dairy', vegan:false},
+      'French Fries' :{calories:365, allergens:'–', vegan:true},
+      'Fruits Juice' :{calories:210, allergens:'–', vegan:true},
+      'Coffee'       :{calories:150, allergens:'–', vegan:true},
+      'Hot Tea'      :{calories:120, allergens:'–', vegan:true},
+      'Americano'    :{calories:10 , allergens:'–', vegan:true},
+      'Latte'        :{calories:190, allergens:'dairy', vegan:false}
+    };
+    const foodSection = document.getElementById('foodSection');
+    const drinksSection = document.getElementById('drinksSection');
+    const summarySection = document.getElementById('summarySection');
+    const stepTitle = document.getElementById('stepTitle');
+    const backBtn = document.getElementById('backBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const summaryList = document.getElementById('summaryList');
+    const totalPriceSpan = document.getElementById('totalPrice');
+    const viewer = document.getElementById('modelViewer');
+    const viewerLabel = document.getElementById('viewerLabel');
+
+    const nutriBg=document.getElementById('nutriBg');
+    const nutriTitle=document.getElementById('nutriTitle');
+    const nutriList=document.getElementById('nutriList');
+    document.getElementById('closeNutri').onclick=()=>nutriBg.classList.add('hidden');
+    nutriBg.onclick=e=>{if(e.target===nutriBg)nutriBg.classList.add('hidden');};
+
+    let currentStep = 1;
+    const selected = new Map();
+
+    function updateView() {
+      foodSection.classList.add('hidden');
+      drinksSection.classList.add('hidden');
+      summarySection.classList.add('hidden');
+      backBtn.disabled = currentStep === 1;
+
+      if (currentStep === 1) {
+        foodSection.classList.remove('hidden');
+        stepTitle.textContent = 'Food';
+        nextBtn.textContent = 'Next';
+      } else if (currentStep === 2) {
+        drinksSection.classList.remove('hidden');
+        stepTitle.textContent = 'Drinks';
+        nextBtn.textContent = 'Next';
+      } else {
+        summarySection.classList.remove('hidden');
+        stepTitle.textContent = 'Cart';
+        nextBtn.textContent = 'Place Order';
+        renderSummary();
+      }
+    }
+
+    function renderSummary() {
+      summaryList.innerHTML = '';
+      let total = 0;
+      selected.forEach((price, name) => {
+        total += price;
+        const li = document.createElement('li');
+        li.textContent = `${name} — Rs. ${price}`;
+        summaryList.appendChild(li);
+      });
+      totalPriceSpan.textContent = total;
+    }
+
+    function showModel(name) {
+      const src = MODEL_SOURCES[name];
+      viewer.src = src || '';
+      viewerLabel.textContent = src ? `3D View: ${name}` : '3D View';
+    }
+    function openNutri(item){
+      const d=NUTRITION[item];
+      if(!d){alert('No data');return;}
+      nutriTitle.textContent=`Nutrition • ${item}`;
+      nutriList.innerHTML=`
+        <li>Calories: ${d.calories}</li>
+        <li>Allergens: ${d.allergens}</li>
+        <li>${d.vegan?'✅':'❌'} Vegan</li>`;
+      nutriBg.classList.remove('hidden');
+    }
+
+    document.querySelectorAll('li[data-item]').forEach(li=>{
+      // whole LI toggles selection
+      li.addEventListener('click',()=>toggleItem(li));
+      // ℹ️ button only opens modal
+      li.querySelector('.info-btn')
+        .addEventListener('click',e=>{
+          e.stopPropagation();
+          openNutri(li.dataset.item);
+        });
+    });
+
+    function toggleItem(el) {
+      const name = el.dataset.item;
+      const price = parseInt(el.dataset.price, 10);
+
+      if (el.getAttribute('aria-selected')) {
+        el.removeAttribute('aria-selected');
+        selected.delete(name);
+      } else {
+        el.setAttribute('aria-selected', 'true');
+        selected.set(name, price);
+      }
+
+      showModel(name);
+    }
+
+
+   function resetAll(){
+      selected.clear();
+      document.querySelectorAll('li[aria-selected]')
+              .forEach(li=>li.removeAttribute('aria-selected'));
+      currentStep=1;
+      updateView();
+      viewer.src='';
+      viewerLabel.textContent='3‑D View';
+    }
+
+    /* --------------------- NEW helpers for payment --------------------- */
+    const payBg  =document.getElementById('payBg');
+    const qrBg   =document.getElementById('qrBg');
+    const qrBox  =document.getElementById('qrBox');
+    const closeQr=document.getElementById('closeQr');
+
+    document.getElementById('payCash').onclick=()=>{
+      payBg.classList.add('hidden');
+      alert('✅ Order placed (cash)');
+      resetAll();
+    };
+
+    document.getElementById('payUpi').onclick=()=>{
+      payBg.classList.add('hidden');
+      showQr();
+    };
+
+    closeQr.onclick =()=>{
+     qrBg.classList.add('hidden');   // hide the QR sheet
+     resetAll();                     // ⬅️ clear cart & jump to Step 1
+ };
+    qrBg.onclick =e=>{
+      if(e.target===qrBg){
+       qrBg.classList.add('hidden');
+       resetAll();                   // ⬅️ clear cart
+   }
+ };
+    function showQr(){
+      // build cart total → amount
+      const total=[...selected.values()].reduce((s,p)=>s+p,0);
+      const upi=`upi://pay?pa=demo@upi&pn=Cafe%20Demo&am=${total}&cu=INR`;
+
+      qrBox.innerHTML='';                // clear last QR (if any)
+      new QRCode(qrBox,{ text:upi, width:180, height:180 });
+
+      qrBg.classList.remove('hidden');
+    }
+
+    /* -------------- MODIFIED nav‑button logic (two lines) -------------- */
+    nextBtn.addEventListener('click',()=>{
+      if(currentStep<3){
+        currentStep++;
+        updateView();
+      }else{
+        if(selected.size===0){ alert('Cart is empty'); return; }
+        payBg.classList.remove('hidden');   // 👈 show payment modal
+      }
+    });
+
+
+    backBtn.addEventListener('click', () => {
+      if (currentStep > 1) {
+        currentStep--;
+        updateView();
+      }
+    });
+
+    updateView();
+  </script>
+</body>
+</html>
