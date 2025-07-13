@@ -148,15 +148,7 @@
         flex-direction: column;
         height: auto;
       }
-     @media (max-width: 768px) {
-      #summaryList li {
-        padding: 4px 0;
-        font-size: 1rem;
-        cursor: pointer;
-       }
-     }
-
-
+	    
       .menu-panel {
         width: 100%;
         border-right: none;
@@ -191,7 +183,19 @@
       header {
         font-size: 1.1rem;
       }
-    }
+      #summaryList li {
+        padding: 4px 0;
+        font-size: 1rem;
+        cursor: pointer;
+  }
+}
+	  
+  @media (max-width: 768px) {
+   .summary-panel {
+    display: none !important;
+  }
+}
+
   </style>
 </head>
 	
