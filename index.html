@@ -143,9 +143,50 @@
            box-shadow:0 10px 25px rgba(0,0,0,.15);max-width:24rem;width:90%;}
     /* start hidden by default (Tailwind’s `hidden` utility) */
     .hidden{display:none!important;}
-  </style>
+    @media (max-width: 768px) {
+      .card {
+        flex-direction: column;
+        height: auto;
+      }
 
+      .menu-panel {
+        width: 100%;
+        border-right: none;
+        border-bottom: 2px solid #2563eb;
+        height: auto;
+      }
+
+      .summary-panel {
+        width: 100%;
+        flex: none;
+        padding-top: 1rem;
+        height: auto;
+      }
+
+      .viewer-wrapper {
+        height: 300px;
+      }
+
+      model-viewer {
+        height: 100%;
+      }
+
+      li {
+        font-size: 0.95rem;
+        padding: 0.55rem 0.6rem;
+      }
+
+      .price, .info-btn {
+        font-size: 0.9rem;
+      }
+
+      header {
+        font-size: 1.1rem;
+      }
+    }
+  </style>
 </head>
+	
 <body>
   <main class="card">
     <aside class="menu-panel">
