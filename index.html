@@ -148,6 +148,14 @@
         flex-direction: column;
         height: auto;
       }
+     @media (max-width: 768px) {
+      #summaryList li {
+        padding: 4px 0;
+        font-size: 1rem;
+        cursor: pointer;
+       }
+     }
+
 
       .menu-panel {
         width: 100%;
@@ -300,6 +308,23 @@
       </div>
     </div>
   </div>
+<!-- ─────────────── NEW (3) Fullscreen 3D View for Mobile ─────────────── -->
+<div id="viewerModal" class="modal-bg hidden">
+  <div class="modal" style="width: 100%; max-width: none; padding: 0; border-radius: 0;">
+    <model-viewer id="mobileViewer"
+      src=""
+      alt="3D model full screen"
+      camera-controls
+      auto-rotate
+      disable-zoom
+      style="width: 100%; height: 100vh; background: #cbd5e1;">
+    </model-viewer>
+    <button onclick="closeViewerModal()" 
+      style="position:absolute;top:10px;right:10px;background:#fff;padding:8px 12px;border-radius:8px;">
+      ✖
+    </button>
+  </div>
+</div>
 
   <!-- ───────────────── NEW (2) QR‑code modal ────────────────────────── -->
   <div id="qrBg" class="modal-bg flex hidden">
@@ -393,17 +418,26 @@
       }
     }
 
-    function renderSummary() {
-      summaryList.innerHTML = '';
-      let total = 0;
-      selected.forEach((price, name) => {
-        total += price;
-        const li = document.createElement('li');
-        li.textContent = `${name} — Rs. ${price}`;
-        summaryList.appendChild(li);
-      });
-      totalPriceSpan.textContent = total;
-    }
+function renderSummary() {
+  summaryList.innerHTML = '';
+  let total = 0;
+  selected.forEach((price, name) => {
+    total += price;
+    const li = document.createElement('li');
+    li.classList.add('cursor-pointer', 'hover:underline');
+    li.textContent = `${name} — Rs. ${price}`;
+
+    // 🆕 Add full-screen 3D viewer when tapping summary items (mobile only)
+    li.addEventListener('click', () => {
+      const src = MODEL_SOURCES[name];
+      if (isMobileView() && src) openViewerModal(src);
+    });
+
+    summaryList.appendChild(li);
+  });
+  totalPriceSpan.textContent = total;
+}
+
 
     function showModel(name) {
       const src = MODEL_SOURCES[name];
@@ -444,8 +478,14 @@
         selected.set(name, price);
       }
 
-      showModel(name);
-    }
+      const modelSrc = MODEL_SOURCES[name];
+      viewer.src = modelSrc || '';
+      viewerLabel.textContent = modelSrc ? `3D View: ${name}` : '3D View';
+
+      if (isMobileView() && modelSrc) {
+        openViewerModal(modelSrc);
+  }
+}
 
 
    function resetAll(){
@@ -517,5 +557,52 @@
 
     updateView();
   </script>
+<script>
+  const viewerModal = document.getElementById("viewerModal");
+  const mobileViewer = document.getElementById("mobileViewer");
+
+  function openViewerModal(src) {
+    mobileViewer.src = src;
+    viewerModal.classList.remove("hidden");
+  }
+
+  function closeViewerModal() {
+    viewerModal.classList.add("hidden");
+    mobileViewer.src = "";
+  }
+
+  viewerModal.onclick = (e) => {
+    if (e.target === viewerModal) closeViewerModal();
+  };
+
+  // Show full-screen viewer only on mobile
+  function isMobileView() {
+    return window.innerWidth <= 768;
+  }
+
+  // Modify toggleItem to also open 3D on mobile
+  function toggleItem(el) {
+    const name = el.dataset.item;
+    const price = parseInt(el.dataset.price, 10);
+
+    if (el.getAttribute('aria-selected')) {
+      el.removeAttribute('aria-selected');
+      selected.delete(name);
+    } else {
+      el.setAttribute('aria-selected', 'true');
+      selected.set(name, price);
+    }
+
+    const modelSrc = MODEL_SOURCES[name];
+    viewer.src = modelSrc || '';
+    viewerLabel.textContent = modelSrc ? `3D View: ${name}` : '3D View';
+
+    // 👇 open full screen only on mobile
+    if (isMobileView() && modelSrc) {
+      openViewerModal(modelSrc);
+    }
+  }
+</script>
+
 </body>
 </html>
